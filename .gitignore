@@ -1,0 +1,26 @@
+# UE4SS runtime / binary dependencies
+ue4ss/
+dwmapi.dll
+*.dll
+*.exe
+
+# Game dumps and generated data
+UE4SS.log
+UE4SS_ObjectDump.txt
+*.usmap
+*CXXHeaderDump*/
+*UHTHeaderDump*/
+liveview/
+watches/
+*.csv
+
+# Local research captures
+captures/
+local/
+tmp/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
