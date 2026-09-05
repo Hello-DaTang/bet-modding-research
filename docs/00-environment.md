@@ -95,19 +95,60 @@ Verifying FName constructor...
 
 No successful `FName constructor verified`, event-loop start, Lua initialization completion, or main-menu startup was observed after that point.
 
-### Working hypothesis
+### Bundled mod state
 
-The bundled BET-specific UE4SS compatibility data is stale relative to the current 2026-09-05 game executable. The strongest current suspect is the FName constructor override / FName verification path rather than the missing optional `GUObjectHashTables` or `GNatives` signatures.
+`Mods/mods.txt` currently enables:
 
-This is consistent with known UE 5.7 UE4SS compatibility reports where FName constructor resolution or validation fails even when other major addresses scan successfully.
+- CheatManagerEnablerMod
+- ConsoleCommandsMod
+- ConsoleEnablerMod
+- BPML_GenericFunctions
+- BPModLoaderMod
+- ETBCommandsMod
+- ItemDumper
+- Keybinds
 
-### Next isolation tests
+An `enabled.txt` is also present under `Mods/ItemDumper`.
 
-1. Verify the unmodified game starts when `dwmapi.dll` is temporarily disabled.
-2. Re-enable UE4SS but disable all bundled mods.
-3. Test `bUseUObjectArrayCache = false`.
-4. Inspect the BET fork's `UE4SS_Signatures/FName_Constructor.lua` and current settings.
-5. If core-only startup still stops at FName verification, move to a newer UE4SS experimental build or derive a current-build FName signature rather than attempting gameplay probes.
+The BET fork contains these explicit signature overrides:
+
+```text
+FName_Constructor.lua
+GUObjectArray.lua.bak
+StaticConstructObject.lua
+```
+
+The current FName constructor AOB supplied by the fork is:
+
+```text
+40 53 48 83 EC 30 48 8B D9 48 89 54 24 20 33 C9 4C 8B CA 44 8B C1 48 85 D2 74 27 0F B7 02 66 85
+```
+
+Relevant settings include:
+
+```text
+bUseUObjectArrayCache = false
+ConsoleEnabled = 1
+GuiConsoleEnabled = 1
+GuiConsoleVisible = 1
+GraphicsAPI = opengl
+```
+
+### TEST-000-A — UE4SS disabled / vanilla isolation
+
+`FAILED — GAME STILL DOES NOT LAUNCH AFTER RENAMING dwmapi.dll TO dwmapi.dll.disabled`
+
+This materially changes the diagnosis. The currently observed no-launch state is not sufficient to attribute the failure to UE4SS injection, because disabling the UE4SS proxy loader did not restore startup.
+
+The next diagnostic priority is therefore to establish whether:
+
+1. a BET process starts and exits immediately,
+2. Windows Error Reporting records an application crash,
+3. Steam game files are missing/corrupted or changed by the current update,
+4. the current BET build has a renderer / Discord SDK / platform startup issue,
+5. a stale process or launcher state is preventing startup.
+
+UE4SS compatibility work is paused until vanilla startup is restored.
 
 ## TEST-001 — Existing object dump viability
 
@@ -134,4 +175,4 @@ This is consistent with known UE 5.7 UE4SS compatibility reports where FName con
 
 ### Status
 
-`BLOCKED BY TEST-000 — CURRENT RUNTIME COMPATIBILITY MUST BE RESTORED FIRST`
+`BLOCKED BY TEST-000 — VANILLA STARTUP MUST BE RESTORED FIRST`
